@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use App\Models\Users;
+use App\Models\User;
 use GuzzleHttp\Promise\Create;
+use Illuminate\Support\Facades\Hash;
 use phpDocumentor\Reflection\DocBlock\Tags\Uses;
 
 class UsersController extends Controller
@@ -16,21 +17,16 @@ class UsersController extends Controller
     }
     public function register(Request $request)
     {
-        dd($request);
-        $request->validate([
+
+        $validated = $request->validate([
             'name' => 'required|min:3',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'confirm_password' => 'required_withpassword|same:password|min:6',
+            'password' => 'required|confirmed|min:6',
+
 
         ]);
-
-        $users = Users::create([
-            'name' => $request['name'],
-            'email', $request['email'],
-            'password', $request['password'],
-
-        ]);
+        $validated["password"] = Hash::make($validated["password"]);
+        $users = User::create($validated);
         Auth::login($users);
     }
 }
